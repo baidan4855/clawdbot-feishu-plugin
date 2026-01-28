@@ -6,6 +6,7 @@
 
 - 支持 WebSocket 长连接方式接收飞书事件（推荐）
 - 支持 HTTP 回调方式接收飞书事件
+- **支持多账户配置**，可同时连接多个飞书机器人
 - 支持发送/编辑/删除消息
 - 支持消息表情回应
 - 支持消息置顶
@@ -74,14 +75,18 @@ clawdbot plugin install https://github.com/baidan4855/clawdbot-feishu-plugin
 
 > 其他配置项均为可选，默认使用 WebSocket 长连接方式接收消息，无需公网 IP。
 
-也可以在 Clawdbot 的 `config.yaml` 中手动配置：
+也可以在 Clawdbot 的配置文件中手动配置：
 
-```yaml
-channels:
-  feishu:
-    appId: "cli_xxxxxxxxxx"
-    appSecret: "xxxxxxxxxxxxxxxxxxxxxxxx"
-    # eventMode: ws  # ws（默认）或 http
+```json
+{
+  "channels": {
+    "feishu": {
+      "appId": "cli_xxxxxxxxxx",
+      "appSecret": "xxxxxxxxxxxxxxxxxxxxxxxx"
+      // "eventMode": "ws"  // ws（默认）或 http
+    }
+  }
+}
 ```
 
 ### 配置项说明
@@ -94,6 +99,92 @@ channels:
 | `verificationToken` | string | 否   | HTTP 回调验证 Token                               |
 | `encryptKey`        | string | 否   | HTTP 回调加密密钥                                 |
 | `baseUrl`           | string | 否   | API 地址，默认 `https://open.feishu.cn/open-apis` |
+
+### 多账户配置
+
+插件支持同时配置多个飞书账户，适用于需要连接多个飞书机器人的场景。
+
+```json
+{
+  "channels": {
+    "feishu": {
+      // 多账户配置
+      "accounts": {
+        "bot1": {
+          "name": "机器人1",
+          "appId": "cli_yyyyyyyyyy",
+          "appSecret": "yyyyyyyyyyyyyyyyyyyyyy",
+          "eventMode": "ws"
+        },
+        "bot2": {
+          "name": "机器人2",
+          "appId": "cli_zzzzzzzzzz",
+          "appSecret": "zzzzzzzzzzzzzzzzzzzzzz",
+          "eventMode": "http",
+          "verificationToken": "verify_token_xxx",
+          "encryptKey": "encrypt_key_xxx"
+        }
+      }
+    }
+  }
+}
+```
+
+#### HTTP 回调路径说明
+
+使用 HTTP 回调模式时，不同账户需要配置不同的回调 URL：
+
+- **默认账户**: `/plugins/feishu/events`
+- **bot1 账户**: `/plugins/feishu/events/bot1`
+- **bot2 账户**: `/plugins/feishu/events/bot2`
+
+在飞书开放平台的「事件与回调」页面，为每个应用配置对应的回调地址。
+
+> 注意：使用 WebSocket 模式时，每个账户会建立独立的 WebSocket 连接，无需额外配置回调路径。
+
+### Agent 绑定配置（Bindings）
+
+当配置了多个飞书账户后，需要通过顶级 `bindings` 配置将不同的 agent 绑定到对应的账户，实现消息路由。
+
+```json
+{
+  "agents": {
+    "list": [
+      {
+        "id": "agent1",
+        "name": "助手1"
+      },
+      {
+        "id": "agent2",
+        "name": "助手2"
+      }
+    ]
+  },
+  "bindings": [
+    {
+      "agentId": "agent1",
+      "match": { "channel": "feishu", "accountId": "bot1" }
+    },
+    {
+      "agentId": "agent2",
+      "match": { "channel": "feishu", "accountId": "bot2" }
+    }
+  ]
+}
+```
+
+**说明：**
+
+- `bindings`: 顶级配置项，是一个数组
+- `agentId`: 对应 `agents.list` 中的 agent `id`
+- `match.channel`: 固定为 `"feishu"`
+- `match.accountId`: 对应 channels 配置中的账户 ID（如 `bot1`、`bot2`）
+- 如果只有一个默认账户，可以省略 `accountId`：`{ "agentId": "agent1", "match": { "channel": "feishu" } }`
+
+这样配置后：
+
+- **bot1** 机器人收到的消息会路由到 **agent1** 处理
+- **bot2** 机器人收到的消息会路由到 **agent2** 处理
 
 ## 使用方式
 

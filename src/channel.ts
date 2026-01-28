@@ -51,9 +51,78 @@ import { handleInboundEvent, createClient } from "./feishu/inbound.js";
 // ============================================================================
 
 export function registerFeishuHttpRoute(api: MoltbotPluginApi) {
-  const routePath = normalizePluginHttpPath(api.id, FEISHU_HTTP_PATH);
+  // Register a route for each account
+  const accountIds = listFeishuAccountIds(api.config);
+
+  for (const accountId of accountIds) {
+    const accountPath = `${FEISHU_HTTP_PATH}/${accountId}`;
+    const routePath = normalizePluginHttpPath(api.id, accountPath);
+
+    api.registerHttpRoute({
+      path: routePath,
+      handler: async (req, res) => {
+        if (req.method !== "POST") {
+          res.statusCode = 405;
+          res.end("method not allowed");
+          return;
+        }
+        const chunks: Buffer[] = [];
+        req.on("data", (chunk) => chunks.push(chunk));
+        req.on("end", async () => {
+          const rawBody = Buffer.concat(chunks).toString("utf8");
+          try {
+            const signature = req.headers["x-lark-signature"];
+            const timestamp = req.headers["x-lark-request-timestamp"];
+            const nonce = req.headers["x-lark-request-nonce"];
+
+            const account = resolveFeishuAccount({ cfg: api.config, accountId });
+            const parsed = parseFeishuCallback({
+              rawBody,
+              headers: {
+                signature: Array.isArray(signature) ? signature[0] : signature,
+                timestamp: Array.isArray(timestamp) ? timestamp[0] : timestamp,
+                nonce: Array.isArray(nonce) ? nonce[0] : nonce,
+              },
+              verification: {
+                verificationToken: account.verificationToken,
+                encryptKey: account.encryptKey,
+                appSecret: account.appSecret,
+              },
+            });
+
+            if (parsed.kind === "challenge") {
+              res.statusCode = 200;
+              res.setHeader("Content-Type", "application/json; charset=utf-8");
+              res.end(JSON.stringify({ challenge: parsed.challenge }));
+              return;
+            }
+
+            await handleInboundEvent({
+              cfg: api.config,
+              accountId,
+              event: parsed.event,
+              log: api.logger,
+            });
+            res.statusCode = 200;
+            res.setHeader("Content-Type", "application/json; charset=utf-8");
+            res.end(JSON.stringify({ code: 0, msg: "success" }));
+          } catch (err) {
+            api.logger?.error?.(`feishu callback error for account ${accountId}: ${String(err)}`);
+            res.statusCode = 500;
+            res.setHeader("Content-Type", "application/json; charset=utf-8");
+            res.end(JSON.stringify({ code: 500, msg: "error" }));
+          }
+        });
+      },
+    });
+
+    api.logger?.info?.(`[feishu] registered HTTP callback route for account: ${accountId} at ${routePath}`);
+  }
+
+  // Also register the default route for backward compatibility (maps to default account)
+  const defaultRoutePath = normalizePluginHttpPath(api.id, FEISHU_HTTP_PATH);
   api.registerHttpRoute({
-    path: routePath,
+    path: defaultRoutePath,
     handler: async (req, res) => {
       if (req.method !== "POST") {
         res.statusCode = 405;

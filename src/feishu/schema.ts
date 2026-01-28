@@ -1,6 +1,11 @@
 /**
  * file: src/feishu/schema.ts
  * desc: 飞书渠道插件的元信息和配置 schema 定义
+ *
+ * HTTP 回调路径说明：
+ * - 默认账户: /plugins/feishu/events
+ * - 多账户模式: /plugins/feishu/events/{accountId}
+ *   例如: /plugins/feishu/events/bot1, /plugins/feishu/events/bot2
  */
 
 export const FEISHU_CHANNEL_ID = "feishu";
