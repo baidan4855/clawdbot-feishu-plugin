@@ -1,0 +1,38 @@
+{
+  "name": "clawdbot-feishu",
+  "version": "0.1.0",
+  "type": "module",
+  "description": "Feishu/Lark channel plugin for Clawdbot",
+  "license": "MIT",
+  "author": "jiangjack",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/baidan4855/clawdbot-feishu-plugin.git"
+  },
+  "bugs": {
+    "url": "https://github.com/baidan4855/clawdbot-feishu-plugin/issues"
+  },
+  "homepage": "https://github.com/baidan4855/clawdbot-feishu-plugin#readme",
+  "keywords": [
+    "clawdbot",
+    "feishu",
+    "lark",
+    "chatbot",
+    "plugin"
+  ],
+  "scripts": {
+    "test": "node --import tsx --test test/**/*.test.ts"
+  },
+  "engines": {
+    "node": ">=18.17.0"
+  },
+  "devDependencies": {
+    "tsx": "^4.7.0"
+  },
+  "moltbot": {
+    "extensions": [
+      "./index.ts"
+    ]
+  },
+  "packageManager": "yarn@1.22.22+sha1.ac34549e6aa8e7ead463a7407e1c7390f61a6610"
+}

@@ -1,0 +1,155 @@
+# Clawdbot Feishu Plugin
+
+[Clawdbot](https://github.com/anthropics/clawdbot) 的飞书（Feishu/Lark）渠道插件，支持通过飞书与 Clawdbot 进行交互。
+
+## 功能特性
+
+- 支持 WebSocket 长连接方式接收飞书事件（推荐）
+- 支持 HTTP 回调方式接收飞书事件
+- 支持发送/编辑/删除消息
+- 支持消息表情回应
+- 支持消息置顶
+- 支持私聊和群聊
+- 支持 @机器人 触发
+- 无需飞书官方 SDK，零外部依赖
+
+## 系统要求
+
+- Node.js >= 18.17.0（需要原生 WebSocket 支持）
+- Clawdbot
+
+## 安装
+
+### 方式一：通过 Clawdbot 插件安装
+
+```bash
+clawdbot plugin install <github-repo-url>
+```
+
+### 方式二：手动安装
+
+1. 克隆仓库到本地：
+
+```bash
+git clone <repo-url> ~/.clawdbot/extensions/feishu
+```
+
+2. 在 Clawdbot 配置中启用插件：
+
+```yaml
+plugins:
+  load:
+    paths:
+      - ~/.clawdbot/extensions/feishu
+  entries:
+    feishu:
+      enabled: true
+```
+
+## 飞书应用配置
+
+### 1. 创建飞书应用
+
+1. 访问 [飞书开放平台](https://open.feishu.cn/app)
+2. 点击「创建企业自建应用」
+3. 填写应用名称和描述
+
+### 2. 获取凭证
+
+在应用的「凭证与基础信息」页面获取：
+
+- **App ID**
+- **App Secret**
+
+### 3. 配置权限
+
+在「权限管理」页面添加以下权限：
+
+| 权限名称 | 权限标识 | 用途 |
+|---------|---------|-----|
+| 获取与发送单聊、群组消息 | `im:message` | 收发消息 |
+| 读取用户发给机器人的单聊消息 | `im:message.p2p_msg:readonly` | 接收私聊 |
+| 获取群组中所有消息 | `im:message.group_msg:readonly` | 接收群聊 |
+| 以应用的身份发消息 | `im:message:send_as_bot` | 发送消息 |
+| 获取用户基本信息 | `contact:user.base:readonly` | 获取用户信息 |
+
+### 4. 配置事件订阅
+
+在「事件与回调」页面：
+
+1. 选择「订阅方式」为 **使用长连接接收事件**（推荐）
+2. 添加事件：`im.message.receive_v1`（接收消息）
+
+> 如果选择 HTTP 回调方式，需要配置公网可访问的回调地址。
+
+### 5. 发布应用
+
+配置完成后，在「版本管理与发布」页面创建版本并发布。
+
+## Clawdbot 配置
+
+安装插件后，在 Clawdbot 控制台的 **Channels** 页面即可看到 Feishu 渠道。只需填写 **App ID** 和 **App Secret** 两个必填项即可完成配置：
+
+![配置界面](assets/config-screenshot.png)
+
+> 其他配置项均为可选，默认使用 WebSocket 长连接方式接收消息，无需公网 IP。
+
+也可以在 Clawdbot 的 `config.yaml` 中手动配置：
+
+```yaml
+channels:
+  feishu:
+    appId: "cli_xxxxxxxxxx"
+    appSecret: "xxxxxxxxxxxxxxxxxxxxxxxx"
+    # eventMode: ws  # ws（默认）或 http
+```
+
+### 配置项说明
+
+| 配置项 | 类型 | 必填 | 说明 |
+|-------|-----|-----|------|
+| `appId` | string | 是 | 飞书应用的 App ID |
+| `appSecret` | string | 是 | 飞书应用的 App Secret |
+| `eventMode` | string | 否 | 事件订阅方式：`ws`（默认）或 `http` |
+| `verificationToken` | string | 否 | HTTP 回调验证 Token |
+| `encryptKey` | string | 否 | HTTP 回调加密密钥 |
+| `baseUrl` | string | 否 | API 地址，默认 `https://open.feishu.cn/open-apis` |
+
+## 使用方式
+
+配置完成并重启 Clawdbot 后：
+
+- **私聊**：直接给机器人发消息
+- **群聊**：@机器人 发送消息
+
+## 开发
+
+### 运行测试
+
+```bash
+# 需要在 Clawdbot 项目环境中运行
+npm test
+```
+
+### 项目结构
+
+```
+├── index.ts              # 插件入口
+├── clawdbot.plugin.json  # 插件清单
+├── src/
+│   ├── channel.ts        # 渠道核心实现
+│   ├── runtime.ts        # 运行时状态
+│   └── feishu/
+│       ├── client.ts     # 飞书 API 客户端
+│       ├── config.ts     # 配置类型定义
+│       ├── events.ts     # 事件解析
+│       ├── outbound.ts   # 出站消息处理
+│       ├── ws-client.ts  # WebSocket 客户端
+│       ├── ws-proto.ts   # Protobuf 编解码
+│       └── ws-data-cache.ts  # 分片消息缓存
+└── test/                 # 单元测试
+```
+
+## 许可证
+
+[MIT](LICENSE)
