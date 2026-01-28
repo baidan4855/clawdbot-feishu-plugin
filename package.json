@@ -1,5 +1,5 @@
 {
-  "name": "clawdbot-feishu",
+  "name": "feishu",
   "version": "0.1.0",
   "type": "module",
   "description": "Feishu/Lark channel plugin for Clawdbot",
