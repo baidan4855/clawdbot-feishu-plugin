@@ -1,4 +1,4 @@
-# openclaw Feishu Plugin
+# Openclaw Feishu Plugin
 
 [![License](https://img.shields.io/badge/License-MIT-blue.svg?style=flat-square)](LICENSE)
 [![Version](https://img.shields.io/badge/Version-0.1.1-brightgreen.svg?style=flat-square)](package.json)
@@ -7,7 +7,7 @@
 
 [English Document](./README_en.md)
 
-[openclaw](https://github.com/openclaw/openclaw) 的飞书（Feishu/Lark）渠道插件，支持通过飞书与 openclaw 进行交互。
+[openclaw](https://github.com/openclaw/openclaw) 的飞书（Feishu/Lark）渠道插件，支持通过飞书与 Openclaw 进行交互。
 
 ## 功能特性
 
