@@ -31,7 +31,7 @@ Feishu/Lark channel plugin for [openclaw](https://github.com/openclaw/openclaw),
 ### Install via openclaw CLI
 
 ```bash
-openclaw plugin install https://github.com/baidan4855/openclaw-feishu-plugin
+openclaw plugins install https://github.com/baidan4855/openclaw-feishu-plugin
 ```
 
 ## Feishu App Configuration

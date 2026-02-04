@@ -1,6 +1,6 @@
 {
   "name": "feishu",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "type": "module",
   "description": "Feishu/Lark channel plugin for openclaw",
   "license": "MIT",
@@ -42,7 +42,8 @@
     "README_en.md",
     "CHANGELOG.md",
     "CHANGELOG_zh-CN.md",
-    "LICENSE"
+    "LICENSE",
+    "openclaw.plugin.json"
   ],
   "packageManager": "yarn@1.22.22+sha1.ac34549e6aa8e7ead463a7407e1c7390f61a6610"
 }

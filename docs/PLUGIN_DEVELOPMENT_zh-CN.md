@@ -186,7 +186,7 @@ api.registerCommand({
 
 用户可以通过以下命令安装：
 ```bash
-openclaw plugin install @my-scope/my-plugin
+openclaw plugins install @my-scope/my-plugin
 ```
 
 ## 6. 在本项目中实践
